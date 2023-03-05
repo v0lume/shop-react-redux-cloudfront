@@ -1,12 +1,12 @@
-service: node-in-aws-web
+service: shop-react-redux-cloudfront
 
-frameworkVersion: '2'
+frameworkVersion: '3'
 
 provider:
   name: aws
   runtime: nodejs12.x
   # setup profile for AWS CLI.
-  # profile: node-aws
+  profile: epam-h4v3u
 
 plugins:
   - serverless-finch
@@ -17,7 +17,7 @@ plugins:
 
 custom:
   client:
-    bucketName: node-in-aws-web-bucket
+    bucketName: katrading
     distributionFolder: build
   s3BucketName: ${self:custom.client.bucketName}
 
@@ -31,7 +31,7 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: ${self:custom.s3BucketName}
-        AccessControl: PublicRead
+        AccessControl: Private
         WebsiteConfiguration:
           IndexDocument: index.html
           ErrorDocument: index.html
@@ -56,6 +56,14 @@ resources:
                     - ' '
                     - - 'arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity'
                       - !Ref OriginAccessIdentity
+            - Sid: 'AllowCloudFrontServicePrincipalReadOnly'
+              Effect: Allow
+              Action: s3:GetObject
+              Resource:
+                - arn:aws:s3:::${self:custom.s3BucketName}/*
+                - arn:aws:s3:::${self:custom.s3BucketName}
+              Principal:
+                Service: "cloudfront.amazonaws.com"
 
     OriginAccessIdentity:
       Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
